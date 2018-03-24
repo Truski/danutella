@@ -37,12 +37,40 @@ public class PeerSkeleton {
     }
   }
 
-  public void query(Socket s, ObjectInputStream inputStream){
+  public void query(Socket s, ObjectInputStream inputStream) {
+    try {
+      // Receive filename
+      int upstream = inputStream.readInt();
+      MessageID messageID = (MessageID) inputStream.readObject();
+      int TTL = inputStream.readInt();
+      String filename = (String) inputStream.readObject();
 
+      // Release resources
+      s.close();
+
+      peer.query(upstream, messageID, TTL, filename);
+
+    } catch (Exception e){
+      e.printStackTrace(); // An error occurred
+    }
   }
 
   public void hitQuery(Socket s, ObjectInputStream inputStream){
+    try {
+      // Receive filename
+      MessageID messageID = (MessageID) inputStream.readObject();
+      int TTL = inputStream.readInt();
+      String filename = (String) inputStream.readObject();
+      String address = (String) inputStream.readObject();
 
+      // Release resources
+      s.close();
+
+      peer.hitQuery(messageID, TTL, filename, address);
+
+    } catch (Exception e){
+      e.printStackTrace(); // An error occurred
+    }
   }
 
 

@@ -3,48 +3,40 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Scanner;
 
 public class Peer {
 
-  public static final String configFile = "config.cfg";
-  public static final String myFilesDir = "myfiles/";
-  public static final String otherFilesDir = "otherfiles/";
+  public static final String CONFIG_FILE = "config.cfg";
+  public static final String MY_FILES_DIR = "myfiles/";
+  public static final String OTHER_FILES_DIR = "myfiles/";
+  public static final String ADDRESS = "localhost";
+  public static final int DEFAULT_TTL = 5;
+  public static final int MESSAGE_CACHE = 10;
 
-  private String address = "localhost";
+  private String address = Peer.ADDRESS;
   private int port;
 
-  private ArrayList<Peer> neighbors;
+  private ArrayList<PeerStub> neighbors;
+  private ArrayList<String> files;
+  private LinkedList<MessagePair> messages;
+  private LinkedList<MessageID> fileRequests;
+
+  private int sequenceNumber = 0;
+  private int TTL = DEFAULT_TTL;
 
   public static void main(String[] args){
-    // Read port numbers from config file
-    // Line 1: This server's port
-    // Remaining lines: Peer ports
 
-    Peer peer;
+    // Initialize the peer
+    Peer peer = initializePeer();
 
-    try {
-      // Open config file
-      File file = new File("config.cfg");
-      BufferedReader br = new BufferedReader(new FileReader(file));
+    PeerSkeleton peerSkeleton = new PeerSkeleton(peer);
 
-      // Read this peer's port number
-      String line = br.readLine();
-      int thisPort = Integer.parseInt(line);
+    new Thread(peerSkeleton::listen).start();
 
-      // Read neighboring peers line by line
-      ArrayList<Peer> peers = new ArrayList<Peer>(); // Create empty list of peers
-      while((line = br.readLine()) != null){ // Read line
-        peers.add(new Peer(Integer.parseInt(line))); // Parse integer, create peer, add to neighbors
-      }
-
-      // Create this peer object
-      peer = new Peer(thisPort, peers);
-
-    } catch (Exception e){
-      System.out.println("Error reading config file");
-      e.printStackTrace();
+    if(peer == null){
       return;
     }
 
@@ -54,7 +46,7 @@ public class Peer {
 
   private static void runCLI(Peer peer) {
     System.out.println("Printing out all neighbors!");
-    for(Peer p : peer.getNeighbors()){
+    for(PeerStub p : peer.getNeighbors()){
       System.out.println(p.getFullAddress());
     }
 
@@ -85,29 +77,119 @@ public class Peer {
     System.out.println("Shutting down peer. Goodbye!");
   }
 
-  // Constructors
+  private static Peer initializePeer(){
 
-  public Peer(int port){
-    this.port = port;
+    // Read port numbers from config file
+    // Line 1: This server's port
+    // Remaining lines: Peer ports
+
+    try {
+      // Open config file
+      File file = new File("config.cfg");
+      BufferedReader br = new BufferedReader(new FileReader(file));
+
+      // Read this peer's port number
+      String line = br.readLine();
+      int thisPort = Integer.parseInt(line);
+
+      // Read neighboring peers line by line
+      ArrayList<PeerStub> peers = new ArrayList<PeerStub>(); // Create empty list of peers
+      while((line = br.readLine()) != null){ // Read line
+        peers.add(new PeerStub(Integer.parseInt(line))); // Parse integer, create peer, add to neighbors
+      }
+
+      // Create this peer object
+      return new Peer(thisPort, peers);
+
+    } catch (Exception e){
+      System.out.println("Error reading config file");
+      e.printStackTrace();
+      return null;
+    }
+
   }
 
-  public Peer(int port, ArrayList<Peer> peers){
+  // Constructors
+
+  public Peer(int port, ArrayList<PeerStub> peers){
     this.port = port;
     this.neighbors = peers;
+    this.messages = new LinkedList<MessagePair>();
+    this.fileRequests = new LinkedList<MessageID>();
   }
 
 
   // Command Line Options
   public void get(String filename){
-    // For each neighbor, query it.
 
+    MessageID messageID = new MessageID(this.getFullAddress(), sequenceNumber++);
+
+    // For each neighbor, query it.
+    for(PeerStub neighbor : neighbors){
+      neighbor.query(this.port, messageID, TTL, filename);
+    }
 
   }
 
   // Inner Workings
 
-  public void query(String filename){
+  // When this peer GETS queried:
+  public void query(int upstream, MessageID messageID, int TTL, String filename){
+    if(messageID.getPeerID().equals(this.getFullAddress())){
+      return;
+    }
 
+    MessagePair mp = new MessagePair(messageID, upstream);
+    if(!messages.contains(mp)){
+      if(messages.size() > MESSAGE_CACHE){
+        messages.removeFirst();
+      }
+      messages.addLast(mp);
+    } else {
+      return;
+    }
+
+    if(this.hasFile(filename)){
+      // Send hitQuery upstream
+      PeerStub peerStub = new PeerStub(upstream);
+      peerStub.hitQuery(messageID, DEFAULT_TTL, filename, this.getFullAddress());
+    }
+
+    // Propagate query
+    // For each neighbor, query it.
+    if(TTL > 0){
+      for(PeerStub neighbor : neighbors){
+        neighbor.query(this.port, messageID, TTL-1, filename);
+      }
+    }
+
+  }
+
+  public void hitQuery(MessageID messageID, int TTL, String filename, String address) {
+    // First, check if this hitQuery is to me
+    if(messageID.getPeerID().equals(this.getFullAddress())){
+      int split = address.indexOf(':');
+      int stubPort = Integer.parseInt(address.substring(split+2));
+      PeerStub origin = new PeerStub(stubPort);
+      if(origin.obtain(filename)){
+        System.out.println("Successfully downloaded " + filename + " from " + address);
+      }
+    } else {
+      // Not mine, push upstream
+      int upstreamPort = getUpstream(messageID);
+      if(upstreamPort != -1 && TTL > 0){
+        new PeerStub(upstreamPort).hitQuery(messageID, TTL-1, filename, address);
+      }
+    }
+  }
+
+  private int getUpstream(MessageID messageID) {
+    for(MessagePair mp : messages){
+      if(mp.getMessageID().equals(messageID)){
+        return mp.getUpstream();
+      }
+    }
+    return -1;
   }
 
   /**
@@ -120,7 +202,7 @@ public class Peer {
     FileInputStream is = null;
 
     try {
-      is = new FileInputStream(myFilesDir + filename); // Open file and grab stream
+      is = new FileInputStream(MY_FILES_DIR + filename); // Open file and grab stream
     } catch (Exception e){
       e.printStackTrace(); // An error occurred
     }
@@ -128,10 +210,22 @@ public class Peer {
     return is;
   }
 
+  // Private helpers
+
+  private boolean hasFile(String filename){
+    for(String f : files){
+      if(f.equals(filename)){
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   // Getters and Setters
 
   public String getAddress(){
-    return this.address;
+    return this.ADDRESS;
   }
 
   public int getPort(){
@@ -139,10 +233,10 @@ public class Peer {
   }
 
   public String getFullAddress(){
-    return address + ":" + this.port;
+    return ADDRESS + ":" + this.port;
   }
 
-  public ArrayList<Peer> getNeighbors(){
+  public ArrayList<PeerStub> getNeighbors(){
     return this.neighbors;
   }
 }
