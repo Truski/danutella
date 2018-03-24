@@ -130,6 +130,10 @@ public class Peer {
 
   // Getters and Setters
 
+  public String getAddress(){
+    return this.address;
+  }
+
   public int getPort(){
     return this.port;
   }
