@@ -13,7 +13,9 @@ public class MasterCopyGenerator {
     // Generate a folder and 10 files per folder for each peer
     for(int i = peerMin; i <= peerMax; i++){
       String dirname = "peer" + i + "/myfiles";
+      String otherdirname = "peer" + i + "/otherfiles";
       new File(dirname).mkdir();
+      new File(otherdirname).mkdir();
       for(int j = fileMin; j <= fileMax; j++){
         String line = "This is peer " + i + "'s file of size " + j + "K. ";
         int size = line.length();
