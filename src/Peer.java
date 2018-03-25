@@ -157,21 +157,23 @@ public class Peer {
       return;
     }
 
-    MessagePair mp = new MessagePair(messageID, upstream);
-    if(!messages.contains(mp)){
+    if(!seenQuery(messageID)){
       if(messages.size() > MESSAGE_CACHE){
         messages.removeFirst();
       }
+
+      MessagePair mp = new MessagePair(messageID, upstream);
       messages.addLast(mp);
     } else {
       return;
     }
 
-    System.out.println("query from " + upstream + " for " + filename);
+    System.out.println("query from " + upstream + " for " + filename + ". Cache size = " + messages.size());
     sleep();
 
     if(this.hasFile(filename)){
       // Send hitQuery upstream
+      System.out.println("WOWZERS! Found it! Sending to " + upstream);
       PeerStub peerStub = new PeerStub(upstream);
       peerStub.hitQuery(messageID, DEFAULT_TTL, filename, this.getFullAddress());
     }
@@ -201,6 +203,7 @@ public class Peer {
 
       int split = address.indexOf(':');
       int stubPort = Integer.parseInt(address.substring(split+2));
+      System.out.println("stubport: " + stubPort);
       PeerStub origin = new PeerStub(stubPort);
       if(origin.obtain(filename)){
         files.add(new DanFile(filename, false));
@@ -239,6 +242,16 @@ public class Peer {
   }
 
   // Private helpers
+
+  private boolean seenQuery(MessageID messageID){
+    for(MessagePair mp : messages){
+      if(mp.getMessageID().equals(messageID)){
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   private void sleep(){
     try {

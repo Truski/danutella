@@ -34,7 +34,7 @@ public class PeerStub {
   public void hitQuery(MessageID messageID, int TTL, String filename, String address){
     String rpc = "hitQuery";
     try {
-      Socket socket = new Socket(address, port);
+      Socket socket = new Socket(this.address, this.port);
 
       ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
       os.writeObject(rpc);
