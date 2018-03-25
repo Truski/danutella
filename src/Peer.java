@@ -202,8 +202,7 @@ public class Peer {
       fileRequests.remove(messageID);
 
       int split = address.indexOf(':');
-      int stubPort = Integer.parseInt(address.substring(split+2));
-      System.out.println("stubport: " + stubPort);
+      int stubPort = Integer.parseInt(address.substring(split+1));
       PeerStub origin = new PeerStub(stubPort);
       if(origin.obtain(filename)){
         files.add(new DanFile(filename, false));
