@@ -260,7 +260,7 @@ public class Peer {
   // Getters and Setters
 
   public String getAddress(){
-    return this.ADDRESS;
+    return this.address;
   }
 
   public int getPort(){
