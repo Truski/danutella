@@ -151,6 +151,9 @@ public class Peer {
       return;
     }
 
+    System.out.println("query from " + upstream + " for " + filename);
+    sleep();
+
     MessagePair mp = new MessagePair(messageID, upstream);
     if(!messages.contains(mp)){
       if(messages.size() > MESSAGE_CACHE){
@@ -178,6 +181,8 @@ public class Peer {
   }
 
   public void hitQuery(MessageID messageID, int TTL, String filename, String address) {
+    System.out.println("hitquery from " + address + " to " + messageID.getPeerID());
+    sleep();
     // First, check if this hitQuery is to me
     if(messageID.getPeerID().equals(this.getFullAddress())){
 
@@ -211,6 +216,9 @@ public class Peer {
    * @return Returns the stream to the file, null if no file found
    */
   public FileInputStream obtain(String filename) {
+    System.out.println("Sending file " + filename);
+    sleep();
+
     FileInputStream is = null;
 
     String dir = this.isOwner(filename) ? MY_FILES_DIR : OTHER_FILES_DIR;
@@ -225,6 +233,14 @@ public class Peer {
   }
 
   // Private helpers
+
+  private void sleep(){
+    try {
+      Thread.sleep(5000);
+    } catch (Exception e){
+      e.printStackTrace();
+    }
+  }
 
   private boolean hasFile(String filename){
 
