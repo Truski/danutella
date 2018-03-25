@@ -152,7 +152,7 @@ public class Peer {
   // Inner Workings
 
   // When this peer GETS queried:
-  public void query(int upstream, MessageID messageID, int TTL, String filename){
+  public synchronized void query(int upstream, MessageID messageID, int TTL, String filename){
     if(messageID.getPeerID().equals(this.getFullAddress())){
       return;
     }
@@ -188,7 +188,7 @@ public class Peer {
 
   }
 
-  public void hitQuery(MessageID messageID, int TTL, String filename, String address) {
+  public synchronized void hitQuery(MessageID messageID, int TTL, String filename, String address) {
     System.out.println("hitquery from " + address + " to " + messageID.getPeerID());
     sleep();
     // First, check if this hitQuery is to me
@@ -223,7 +223,7 @@ public class Peer {
    * @param filename Name of the file to obtain
    * @return Returns the stream to the file, null if no file found
    */
-  public FileInputStream obtain(String filename) {
+  public synchronized FileInputStream obtain(String filename) {
     System.out.println("Sending file " + filename);
     sleep();
 
