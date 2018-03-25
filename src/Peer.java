@@ -157,9 +157,6 @@ public class Peer {
       return;
     }
 
-    System.out.println("query from " + upstream + " for " + filename);
-    sleep();
-
     MessagePair mp = new MessagePair(messageID, upstream);
     if(!messages.contains(mp)){
       if(messages.size() > MESSAGE_CACHE){
@@ -169,6 +166,9 @@ public class Peer {
     } else {
       return;
     }
+
+    System.out.println("query from " + upstream + " for " + filename);
+    sleep();
 
     if(this.hasFile(filename)){
       // Send hitQuery upstream
