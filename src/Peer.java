@@ -204,15 +204,6 @@ public class Peer {
     }
   }
 
-  private int getUpstream(MessageID messageID) {
-    for(MessagePair mp : messages){
-      if(mp.getMessageID().equals(messageID)){
-        return mp.getUpstream();
-      }
-    }
-    return -1;
-  }
-
   /**
    * Obtains a FileStream for the requested file.
    *
@@ -255,6 +246,15 @@ public class Peer {
     }
 
     return false;
+  }
+
+  private int getUpstream(MessageID messageID) {
+    for(MessagePair mp : messages){
+      if(mp.getMessageID().equals(messageID)){
+        return mp.getUpstream();
+      }
+    }
+    return -1;
   }
 
   // Getters and Setters
