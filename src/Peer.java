@@ -99,12 +99,18 @@ public class Peer {
 
       // Load list of files it contains
 
-      File folder = new File("myfiles");
+      File folder = new File(MY_FILES_DIR);
       File[] listOfFiles = folder.listFiles();
 
       ArrayList<DanFile> files = new ArrayList<DanFile>();
       for (int i = 0; i < listOfFiles.length; i++) {
         files.add(new DanFile(listOfFiles[i].getName(), true));
+      }
+
+      folder = new File(OTHER_FILES_DIR);
+      listOfFiles = folder.listFiles();
+      for (int i = 0; i < listOfFiles.length; i++) {
+        files.add(new DanFile(listOfFiles[i].getName(), false));
       }
 
       // Create this peer object
