@@ -82,6 +82,26 @@ public class PeerStub {
     return false;
   }
 
+  public void invalidate(MessageID messageID, String originServer, String filename, int version){
+    String rpc = "invalidate";
+    try {
+      Socket socket = new Socket(this.address, this.port);
+
+      ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
+      os.writeObject(rpc);
+
+      os.writeObject(messageID);
+      os.writeObject(originServer);
+      os.writeObject(filename);
+      os.writeInt(version);
+
+      socket.close();
+
+    } catch (Exception e){
+      e.printStackTrace();
+    }
+  }
+
   public String getFullAddress(){
     return address + ":" + port;
   }

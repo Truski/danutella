@@ -28,6 +28,8 @@ public class PeerSkeleton {
               hitQuery(s, inputStream);
             } else if(rpc.equals("obtain")){
               obtain(s, inputStream);
+            } else if(rpc.equals("invalidate")){
+              invalidate(s, inputStream);
             }
           }
         }.start();
@@ -97,6 +99,24 @@ public class PeerSkeleton {
       // Release resources
       s.close();
       fis.close();
+
+    } catch (Exception e){
+      e.printStackTrace(); // An error occurred
+    }
+  }
+
+  public void invalidate(Socket s, ObjectInputStream inputStream){
+    try {
+      // Receive filename
+      MessageID messageID = (MessageID) inputStream.readObject();
+      String originServer = (String) inputStream.readObject();
+      String filename = (String) inputStream.readObject();
+      int version = inputStream.getInt();
+
+      // Release resources
+      s.close();
+
+      peer.invalidate(messageID, originServer, filename, version);
 
     } catch (Exception e){
       e.printStackTrace(); // An error occurred

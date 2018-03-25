@@ -240,7 +240,49 @@ public class Peer {
     return is;
   }
 
+  public synchronized void invalidate(MessageID messageID, String originServer, String filename, int version){
+    if(messageID.getPeerID().equals(this.getFullAddress())){
+      return;
+    }
+
+    if(!seenQuery(messageID)){
+      if(messages.size() > MESSAGE_CACHE){
+        messages.removeFirst();
+      }
+
+      MessagePair mp = new MessagePair(messageID, -1);
+      messages.addLast(mp);
+    } else {
+      return;
+    }
+
+    sleep();
+
+    if((DanFile file = this.getFile(filename)) != NULL){
+      file.setVersion(version);
+      file.invalidate();
+    }
+
+    // Propagate query
+    // For each neighbor, query it.
+    if(TTL > 0){
+      for(PeerStub neighbor : neighbors){
+        neighbor.query(this.port, messageID, TTL-1, filename);
+      }
+    }
+  }
+
   // Private helpers
+
+  private DanFile getFile(String filename){
+    for(DanFile df : files){
+      if(df.getFilename.equals(filename)){
+        return df;
+      }
+    }
+
+    return NULL;
+  }
 
   private boolean seenQuery(MessageID messageID){
     for(MessagePair mp : messages){
@@ -263,7 +305,7 @@ public class Peer {
   private boolean hasFile(String filename){
 
     for(DanFile f : files){
-      if(f.getFilename().equals((filename))){
+      if(f.isValid() && f.getFilename().equals((filename))){
         return true;
       }
     }
