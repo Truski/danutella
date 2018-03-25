@@ -136,7 +136,7 @@ public class Peer {
 
 
   // Command Line Options
-  public void get(String filename){
+  public synchronized void get(String filename){
 
     MessageID messageID = new MessageID(this.getFullAddress(), sequenceNumber++);
 
