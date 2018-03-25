@@ -1,0 +1,63 @@
+<project default="main">
+
+    <target name="compile">
+        <mkdir dir="build/class"/>
+        <javac includeantruntime="false" srcdir="src" destdir="build/class"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="peer0/Peer.jar" basedir="build/class">
+            <manifest>
+                <attribute name="Main-Class" value="Peer"/>
+            </manifest>
+        </jar>
+        <jar destfile="peer1/Peer.jar" basedir="build/class">
+            <manifest>
+                <attribute name="Main-Class" value="Peer"/>
+            </manifest>
+        </jar>
+        <jar destfile="peer2/Peer.jar" basedir="build/class">
+            <manifest>
+                <attribute name="Main-Class" value="Peer"/>
+            </manifest>
+        </jar>
+        <jar destfile="peer3/Peer.jar" basedir="build/class">
+            <manifest>
+                <attribute name="Main-Class" value="Peer"/>
+            </manifest>
+        </jar>
+        <jar destfile="peer4/Peer.jar" basedir="build/class">
+            <manifest>
+                <attribute name="Main-Class" value="Peer"/>
+            </manifest>
+        </jar>
+        <jar destfile="peer5/Peer.jar" basedir="build/class">
+            <manifest>
+                <attribute name="Main-Class" value="Peer"/>
+            </manifest>
+        </jar>
+        <jar destfile="peer6/Peer.jar" basedir="build/class">
+            <manifest>
+                <attribute name="Main-Class" value="Peer"/>
+            </manifest>
+        </jar>
+        <jar destfile="peer7/Peer.jar" basedir="build/class">
+            <manifest>
+                <attribute name="Main-Class" value="Peer"/>
+            </manifest>
+        </jar>
+        <jar destfile="peer8/Peer.jar" basedir="build/class">
+            <manifest>
+                <attribute name="Main-Class" value="Peer"/>
+            </manifest>
+        </jar>
+        <jar destfile="peer9/Peer.jar" basedir="build/class">
+            <manifest>
+                <attribute name="Main-Class" value="Peer"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="main" depends="jar"/>
+
+</project>
