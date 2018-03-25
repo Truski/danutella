@@ -232,7 +232,7 @@ public class Peer {
     String dir = this.isOwner(filename) ? MY_FILES_DIR : OTHER_FILES_DIR;
 
     try {
-      is = new FileInputStream(MY_FILES_DIR + filename); // Open file and grab stream
+      is = new FileInputStream(dir + filename); // Open file and grab stream
     } catch (Exception e){
       e.printStackTrace(); // An error occurred
     }
