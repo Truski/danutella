@@ -11,7 +11,7 @@ public class Peer {
 
   public static final String CONFIG_FILE = "config.cfg";
   public static final String MY_FILES_DIR = "myfiles/";
-  public static final String OTHER_FILES_DIR = "myfiles/";
+  public static final String OTHER_FILES_DIR = "otherfiles/";
   public static final String ADDRESS = "localhost";
   public static final int DEFAULT_TTL = 5;
   public static final int MESSAGE_CACHE = 10;
@@ -20,7 +20,7 @@ public class Peer {
   private int port;
 
   private ArrayList<PeerStub> neighbors;
-  private ArrayList<String> files;
+  private ArrayList<DanFile> files;
   private LinkedList<MessagePair> messages;
   private LinkedList<MessageID> fileRequests;
 
@@ -96,8 +96,19 @@ public class Peer {
         peers.add(new PeerStub(Integer.parseInt(line))); // Parse integer, create peer, add to neighbors
       }
 
+
+      // Load list of files it contains
+
+      File folder = new File("myfiles");
+      File[] listOfFiles = folder.listFiles();
+
+      ArrayList<DanFile> files = new ArrayList<DanFile>();
+      for (int i = 0; i < listOfFiles.length; i++) {
+        files.add(new DanFile(listOfFiles[i].getName(), true));
+      }
+
       // Create this peer object
-      return new Peer(thisPort, peers);
+      return new Peer(thisPort, peers, files);
 
     } catch (Exception e){
       System.out.println("Error reading config file");
@@ -109,9 +120,10 @@ public class Peer {
 
   // Constructors
 
-  public Peer(int port, ArrayList<PeerStub> peers){
+  public Peer(int port, ArrayList<PeerStub> peers, ArrayList<DanFile> files){
     this.port = port;
     this.neighbors = peers;
+    this.files = files;
     this.messages = new LinkedList<MessagePair>();
     this.fileRequests = new LinkedList<MessageID>();
   }
@@ -170,6 +182,7 @@ public class Peer {
       int stubPort = Integer.parseInt(address.substring(split+2));
       PeerStub origin = new PeerStub(stubPort);
       if(origin.obtain(filename)){
+        files.add(new DanFile(filename, false));
         System.out.println("Successfully downloaded " + filename + " from " + address);
       }
     } else {
@@ -199,6 +212,8 @@ public class Peer {
   public FileInputStream obtain(String filename) {
     FileInputStream is = null;
 
+    String dir = this.isOwner(filename) ? MY_FILES_DIR : OTHER_FILES_DIR;
+
     try {
       is = new FileInputStream(MY_FILES_DIR + filename); // Open file and grab stream
     } catch (Exception e){
@@ -211,9 +226,21 @@ public class Peer {
   // Private helpers
 
   private boolean hasFile(String filename){
-    for(String f : files){
-      if(f.equals(filename)){
+
+    for(DanFile f : files){
+      if(f.getFilename().equals((filename))){
         return true;
+      }
+    }
+
+    return false;
+  }
+
+  private boolean isOwner(String filename) {
+
+    for(DanFile f : files){
+      if(f.getFilename().equals(filename)){
+        return f.isOwner();
       }
     }
 
