@@ -1,10 +1,12 @@
 public class DanFile {
   private String filename;
   private boolean owner;
+  private int version;
 
-  public DanFile(String filename, boolean owner) {
+  public DanFile(String filename, boolean owner, int version) {
     this.filename = filename;
     this.owner = owner;
+    this.version = version;
   }
 
   public String getFilename() {
@@ -21,5 +23,13 @@ public class DanFile {
 
   public void setOwner(boolean owner) {
     this.owner = owner;
+  }
+
+  public int getVersion() {
+    return version;
+  }
+
+  public void setVersion(int version) {
+    this.version = version;
   }
 }
