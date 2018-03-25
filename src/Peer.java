@@ -61,7 +61,8 @@ public class Peer {
       String function = command[0];
 
       if(function.equals("exit")){
-        break; // Exit out of loop, ending program
+        System.out.println("Shutting down peer. Goodbye!");
+        System.exit(0); // End all threads
       } else if (function.equals("get")){
         if(command.length == 2){
           String filename = command[1];
@@ -71,10 +72,7 @@ public class Peer {
       }
 
       System.out.println("Invalid Command!");
-
     }
-
-    System.out.println("Shutting down peer. Goodbye!");
   }
 
   private static Peer initializePeer(){
