@@ -134,6 +134,8 @@ public class Peer {
 
     MessageID messageID = new MessageID(this.getFullAddress(), sequenceNumber++);
 
+    fileRequests.add(messageID);
+
     // For each neighbor, query it.
     for(PeerStub neighbor : neighbors){
       neighbor.query(this.port, messageID, TTL, filename);
@@ -178,6 +180,14 @@ public class Peer {
   public void hitQuery(MessageID messageID, int TTL, String filename, String address) {
     // First, check if this hitQuery is to me
     if(messageID.getPeerID().equals(this.getFullAddress())){
+
+      // Do i still want this file?
+      if(!fileRequests.contains(messageID)){
+        System.out.println("Receieved hitquery from " + address + ", but I already got " + filename);
+        return;
+      }
+      fileRequests.remove(messageID);
+
       int split = address.indexOf(':');
       int stubPort = Integer.parseInt(address.substring(split+2));
       PeerStub origin = new PeerStub(stubPort);
