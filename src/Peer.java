@@ -546,7 +546,7 @@ public class Peer {
       // Update the TTR status of the file
       danFile.checkTTR();
 
-      // Check if the TTr is expired
+      // Check if the TTR is expired
       if(danFile.isExpired()){
         // If it is expired, poll the origin server
         PeerStub originServer = new PeerStub(danFile.getOriginServer()); // Create a stub to connect to
@@ -554,6 +554,7 @@ public class Peer {
 
         // If the result is out of date, invalidate the file
         if(result.isOutOfDate()){
+          System.out.println("Invalidating " + danFile.getFilename() + ". It's too old!");
           danFile.invalidate();
         } else {
           // Otherwise, just update it with the new TTR
