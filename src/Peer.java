@@ -353,7 +353,20 @@ public class Peer {
 
       if(danFile != null){
         // Add this file to this peer's list of files
-        files.add(danFile);
+
+        // First, check if we already had this file
+        DanFile old = getDanFile(filename);
+        if(old != null){
+          // If we already had it, update parameters
+          old.setVersion(danFile.getVersion());
+          old.setLastModifiedTime(danFile.getLastModifiedTime());
+          old.setConsistency(danFile.getConsistency());
+          old.setTTR(danFile.getTTR());
+          danFile = old;
+        } else {
+          // Otherwise, add it to the list of files
+          files.add(danFile);
+        }
         System.out.println("Successfully downloaded " + filename + " from " + address);
       }
     } else {
