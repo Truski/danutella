@@ -1,18 +1,18 @@
-public class DanFile {
+import java.io.Serializable;
+
+public class DanFile implements Serializable{
 
   public static final int VALID = 0, INVALID = 1, TTR_EXPIRED = 2;
 
   private String filename;
-  private boolean owner;
   private int version;
   private String originServer;
   private int consistency;
   private long lastModifiedTime;
   private long TTR;
 
-  public DanFile(String filename, boolean owner, int version, String originServer, long lastModifiedTime, long TTR) {
+  public DanFile(String filename, int version, String originServer, long lastModifiedTime, long TTR) {
     this.filename = filename;
-    this.owner = owner;
     this.version = version;
     this.originServer = originServer;
     this.consistency = VALID;
@@ -28,12 +28,8 @@ public class DanFile {
     this.filename = filename;
   }
 
-  public boolean isOwner() {
-    return owner;
-  }
-
-  public void setOwner(boolean owner) {
-    this.owner = owner;
+  public boolean isOwner(Peer peer) {
+    return originServer.equals(peer.getFullAddress());
   }
 
   public int getVersion() {
