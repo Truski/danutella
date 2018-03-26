@@ -163,13 +163,16 @@ public class Peer {
       danFile.setVersion(danFile.getVersion()+1);
       danFile.setLastModifiedTime(System.currentTimeMillis());
 
-      // Show user that it is being invalidated
-      System.out.println("Invalidating " + filename + "; new version: " + danFile.getVersion());
+      // Check if we're in PUSH mode
+      if(MODE == PUSH){
+        // Show user that it is being invalidated
+        System.out.println("Invalidating " + filename + "; new version: " + danFile.getVersion());
 
-      // Broadcast an invalidation message to all neighboring peers
-      MessageID messageID = new MessageID(ID, sequenceNumber++);
-      for(PeerStub peerStub : neighbors){
-        peerStub.invalidate(messageID, ID, filename, danFile.getVersion());
+        // Broadcast an invalidation message to all neighboring peers
+        MessageID messageID = new MessageID(ID, sequenceNumber++);
+        for(PeerStub peerStub : neighbors){
+          peerStub.invalidate(messageID, ID, filename, danFile.getVersion());
+        }
       }
 
     } else {
