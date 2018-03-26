@@ -540,6 +540,10 @@ public class Peer {
   public synchronized void lazyPoll(){
     // Loop through every file on this peer
     for(DanFile danFile : files){
+
+      // Do not poll for own file
+      if(danFile.isOwner(this)) continue;
+
       // Update the TTR status of the file
       danFile.checkTTR();
 
