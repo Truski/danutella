@@ -103,6 +103,7 @@ public class DanFile implements Serializable{
    * Updates the consistency based on the TTR (only for valid files)
    */
   public void checkTTR(){
+    if(Peer.MODE == Peer.PUSH) return; // Do not check TTRs in Push Mode
     if(lastPolledTime < 0) return; // Ignore TTR checks for master files
 
     // Compare current time to the last polled time increased by the ttr time
