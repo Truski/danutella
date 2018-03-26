@@ -141,7 +141,7 @@ public class PeerStub {
   }
 
   /**
-   * Packs paramters and sends an invalidation message to the peer
+   * Packs parameters and sends an invalidation message to the peer
    * @param messageID the messageID of the message
    * @param originServer the origin of the file
    * @param filename the name of the file to invalidate
@@ -163,6 +163,7 @@ public class PeerStub {
       os.writeObject(originServer);
       os.writeObject(filename);
       os.writeInt(version);
+      os.writeObject("endoffile"); // End of stream padding
 
       // Clean up resources and close connection
       socket.close();

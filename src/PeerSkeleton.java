@@ -128,7 +128,7 @@ public class PeerSkeleton {
       OutputStream os = s.getOutputStream(); // File uploading stream
 
       // Send file information
-      DanFile danFile = peer.getFile(filename); // Get DanFile with the given name
+      DanFile danFile = peer.getDanFile(filename); // Get DanFile with the given name
       ObjectOutputStream objectOutputStream = new ObjectOutputStream(os); // Create object output stream over network
       objectOutputStream.writeObject(danFile); // Send DanFile over the network
 

@@ -106,4 +106,25 @@ public class DanFile implements Serializable{
   public void setVersion(int version) {
     this.version = version;
   }
+
+  public String print(Peer ref){
+    String validation;
+    switch(consistency){
+      case VALID:
+        validation = "VALID";
+        break;
+      case INVALID:
+        validation = "INVALID";
+        break;
+      case TTR_EXPIRED:
+        validation = "TTR_EXPIRED";
+        break;
+      default:
+        validation = "UNKNOWN";
+    }
+    if(isOwner(ref)){
+      return " +++ " + filename + " : { version: " + version + "; state: " + validation + " }";
+    }
+    return " - " + filename + " : { version: " + version + "; state: " + validation + " }";
+  }
 }

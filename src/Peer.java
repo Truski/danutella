@@ -89,7 +89,7 @@ public class Peer {
     while(true){
 
       // Display options for peer and prompt
-      System.out.println("Please enter a command: get {filename}");
+      System.out.println("Please enter a command: get {filename}, files, edit {filename}");
       System.out.print(prompt);
 
       // Parse command
@@ -108,10 +108,45 @@ public class Peer {
           peer.get(filename);
           continue;
         }
+      } else if (function.equals("edit")){
+        if(command.length == 2){
+          // Parse filename from command and query neighbors for filename
+          String filename = command[1];
+          peer.edit(filename);
+          continue;
+        }
+      } else if(function.equals("files")){
+        peer.listFiles();
+        continue;
       }
 
       // Print error message for invalid command
       System.out.println("Invalid Command!");
+    }
+  }
+
+  private void edit(String filename) {
+    DanFile danFile = getDanFile(filename);
+    if(danFile != null && danFile.isOwner(this)){
+
+      danFile.setVersion(danFile.getVersion()+1);
+      danFile.setLastModifiedTime(System.nanoTime());
+
+      System.out.println("Invalidating " + filename + "; new version: " + danFile.getVersion());
+      MessageID messageID = new MessageID(ID, sequenceNumber++);
+      for(PeerStub peerStub : neighbors){
+        peerStub.invalidate(messageID, ID, filename, danFile.getVersion());
+      }
+
+    } else {
+      System.out.println("You cannot edit" + filename + "; you must have and own the file.");
+    }
+  }
+
+  private void listFiles() {
+    System.out.println("List of Files:");
+    for(DanFile danFile : files){
+      System.out.println(danFile.print(this));
     }
   }
 
@@ -397,8 +432,9 @@ public class Peer {
     System.out.println("Invalidation received! " + filename + " version is now " + version);
     sleep();
 
-    DanFile file = this.getFile(filename);
+    DanFile file = this.getDanFile(filename);
     if(file != null){
+      System.out.println("Invalidation successful. Old is " + file.getVersion());
       file.setVersion(version);
       file.invalidate();
     }
@@ -416,7 +452,7 @@ public class Peer {
    * @param filename name of the file to get the DanFile for
    * @return The DanFile to work with, null if the name doesn't exist
    */
-  public DanFile getFile(String filename){
+  public DanFile getDanFile(String filename){
     // Loop through all dan files
     for(DanFile df : files){
       if(df.getFilename().equals(filename)){
