@@ -54,6 +54,8 @@ public class PeerSkeleton {
               obtain(s, inputStream);
             } else if(rpc.equals("invalidate")){
               invalidate(s, inputStream);
+            } else if(rpc.equals("poll")){
+              poll(s, inputStream);
             }
           }
         }.start();
@@ -168,6 +170,39 @@ public class PeerSkeleton {
 
       // Send the operation to the Peer object
       peer.invalidate(messageID, originServer, filename, version);
+
+    } catch (Exception e){
+      e.printStackTrace(); // An error occurred
+    }
+  }
+
+
+  /**
+   * Reads parameters for a poll request and forwards them to the peer. Sends back
+   * a poll result
+   * @param s Connection to listen for file name ane send result over
+   * @param inputStream InputStream to read over the network
+   */
+  private void poll(Socket s, ObjectInputStream inputStream){
+    try {
+      // Receive version
+      int version = inputStream.readInt();
+
+      // Receive filename
+      String filename = (String) inputStream.readObject();
+
+      // Open output stream
+      OutputStream os = s.getOutputStream();
+      ObjectOutputStream objectOutputStream = new ObjectOutputStream(os); // Create object output stream over network
+
+      // Poll the peer
+      PollResult result = peer.poll(version, filename);
+
+      // Send result over network
+      objectOutputStream.writeObject(result);
+
+      // Release resources
+      s.close();
 
     } catch (Exception e){
       e.printStackTrace(); // An error occurred

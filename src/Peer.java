@@ -32,6 +32,10 @@ public class Peer {
   public static final long NANOS_IN_SECOND = 1000000000; // Nanoseconds in a second for math
   public static final long TTR = NANOS_IN_SECOND * 60; // Default time to refresh in seconds
 
+  // Program configuration parameters
+  public static final int PUSH = 0, PULL = 1;
+  public static int MODE = PUSH;
+
   // Instance variables
   private PeerID ID; // The ID of the peer
 
@@ -51,6 +55,18 @@ public class Peer {
    */
   public static void main(String[] args){
 
+    if(args.length == 0){
+      System.out.println("No consistency configuration parameter provided. Using push-based consistency.");
+    } else {
+      if(args[0].equals("push")){
+        MODE = PUSH;
+      } else if(args[0].equals("pull")){
+        MODE = PULL;
+      } else {
+        System.out.println("Invalid command line arguments. Defaulting to push-based consistency.");
+      }
+    }
+
     // Initialize the peer
     Peer peer = initializePeer();
 
@@ -65,6 +81,12 @@ public class Peer {
 
     // Start listening for incoming connections on a separate thread
     new Thread(peerSkeleton::listen).start();
+
+    // If it's set to PULL mode create and deploy a lazy polling thread
+    if(MODE == PULL){
+      LazyPoller lazyPoller = new LazyPoller(peer);
+      new Thread(lazyPoller::autoPoll).start();
+    }
 
     // Run the command line interface
     runCLI(peer);
@@ -462,6 +484,27 @@ public class Peer {
     }
   }
 
+  /**
+   * When a peer receives a poll request, it checks to see if the current version is newer and returns a reply to update
+   * the TTR if necessary or to invalidate the file.
+   * @param version the version that the other peer has the file of
+   * @param filename the name of the file to check
+   * @return a PollResult object for the other peer to process
+   */
+  public synchronized PollResult poll(int version, String filename){
+    // Get the DanFile representation of the file with the given name
+    DanFile danFile = getDanFile(filename);
+
+    // Check to see if the current version is newer
+    if(danFile.getVersion() > version){
+      // If it is newer, return an outOfDate = True result
+      return new PollResult(true, 0);
+    } else {
+      // If they have the same version, give it a new TTR
+      return new PollResult(false, TTR);
+    }
+  }
+
 
   /**
    * Gets the DanFile from the list of files with the given name
@@ -481,10 +524,39 @@ public class Peer {
     return null;
   }
 
+  /**
+   * This function is used for the Poll-based approach to consistency. Every so often the lazy poller will call this
+   * method. It checks each file to see if its ttr is expired. If it is expired, it will poll the origin server. If
+   * it is out of date, the file will be invalidated. Otherwise, it will receive a new TTR.
+   */
+  public synchronized void lazyPoll(){
+    // Loop through every file on this peer
+    for(DanFile danFile : files){
+      // Update the TTR status of the file
+      danFile.checkTTR();
+
+      // Check if the TTr is expired
+      if(danFile.isExpired()){
+        // If it is expired, poll the origin server
+        PeerStub originServer = new PeerStub(danFile.getOriginServer()); // Create a stub to connect to
+        PollResult result = originServer.poll(danFile.getVersion(), danFile.getFilename()); // poll the origin server
+
+        // If the result is out of date, invalidate the file
+        if(result.isOutOfDate()){
+          danFile.invalidate();
+        } else {
+          // Otherwise, just update it with the new TTR
+          danFile.updateTTR(result.getNewTTR());
+        }
+      }
+    }
+  }
+
 
   // **********************
   // Private Helper Methods
   // **********************
+
 
   /**
    * Checks if this message has already been seen to limit infinite talk-back

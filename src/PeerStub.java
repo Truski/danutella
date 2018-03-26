@@ -174,4 +174,46 @@ public class PeerStub {
     }
   }
 
+  /**
+   * Polls the origin server to see if the file must be updated or not. Packs the parameters
+   * and returns a PollResult object for the Peer to make decisions on
+   *
+   * @param version the version to check for
+   * @param filename Name of the file to check
+   * @return A PollResult object containing TTR and expiration information from the origin server
+   */
+  public PollResult poll(int version, String filename) {
+    // Name the RPC
+    String rpc = "poll";
+    try {
+      // Connect over the network to the peer
+      Socket socket = new Socket(ID.getAddress(), ID.getPort());
+
+      // Send the RPC
+      ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
+      os.writeObject(rpc);
+
+      // Send version
+      os.writeInt(version);
+      // Send filename
+      os.writeObject(filename);
+
+      // Get input over network
+      InputStream is = socket.getInputStream();
+      // Read in PollResult
+      ObjectInputStream objectInputStream = new ObjectInputStream(is);
+      PollResult result = (PollResult) objectInputStream.readObject();
+
+      // Release resources
+      socket.close();
+
+      // Return the poll result
+      return result;
+
+    } catch (Exception e){
+      e.printStackTrace(); // An error occurred
+    }
+
+    return null; // Failed to poll. Something went wrong
+  }
 }
