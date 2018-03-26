@@ -1,6 +1,17 @@
-public class PeerID {
+import java.io.Serializable;
+
+/**
+ * A PeerID is a combination of the peer's address and port number used for identification purposes.
+ */
+public class PeerID implements Serializable{
   private String address;
   private int port;
+
+  // ****************
+  // Boilerplate Code
+  // ****************
+
+  // Comments omitted because this is generic, boilerplate code
 
   public PeerID(int port) {
     this.address = Peer.ADDRESS;

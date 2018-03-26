@@ -1,6 +1,16 @@
+/**
+ * A messagePair links a messageID to an upstream peer. Instead of using a hashtable, a short arraylist is created so
+ * that we can control the maximum amount of associative mappings we are caching.
+ */
 public class MessagePair {
   private MessageID messageID;
   private PeerID upstream;
+
+  // ****************
+  // Boilerplate Code
+  // ****************
+
+  // Comments omitted because this is generic, boilerplate code
 
   public MessagePair(MessageID messageID, PeerID upstream) {
     this.messageID = messageID;

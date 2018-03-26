@@ -1,8 +1,18 @@
 import java.io.Serializable;
 
+/**
+ * A MessageID is the combination of a PeerID and a sequenceNumber. It is used so that a message is not received twice
+ * by the same peer, and so that we can link them to Upstream PeerIDs as a trace-back mechanism.
+ */
 public class MessageID implements Serializable {
   private PeerID peerID;
   private int sequenceNumber;
+
+  // ****************
+  // Boilerplate Code
+  // ****************
+
+  // Comments omitted because this is generic, boilerplate code
 
   public MessageID(PeerID peerID, int sequenceNumber) {
     this.peerID = peerID;
