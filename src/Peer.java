@@ -15,6 +15,7 @@ public class Peer {
   public static final String ADDRESS = "localhost";
   public static final int DEFAULT_TTL = 5;
   public static final int MESSAGE_CACHE = 10;
+  public static final long TTR = 1000 * 60;
 
   private String address = Peer.ADDRESS;
   private int port;
@@ -104,13 +105,7 @@ public class Peer {
 
       ArrayList<DanFile> files = new ArrayList<DanFile>();
       for (int i = 0; i < listOfFiles.length; i++) {
-        files.add(new DanFile(listOfFiles[i].getName(), true));
-      }
-
-      folder = new File(OTHER_FILES_DIR);
-      listOfFiles = folder.listFiles();
-      for (int i = 0; i < listOfFiles.length; i++) {
-        files.add(new DanFile(listOfFiles[i].getName(), false));
+        files.add(new DanFile(listOfFiles[i].getName(), true, 0, null, System.nanoTime(), Peer.TTR));
       }
 
       // Create this peer object
@@ -205,7 +200,7 @@ public class Peer {
       int stubPort = Integer.parseInt(address.substring(split+1));
       PeerStub origin = new PeerStub(stubPort);
       if(origin.obtain(filename)){
-        files.add(new DanFile(filename, false));
+        files.add(new DanFile(filename, false, 0, address, System.nanoTime(), TTR));
         System.out.println("Successfully downloaded " + filename + " from " + address);
       }
     } else {
@@ -258,7 +253,8 @@ public class Peer {
 
     sleep();
 
-    if((DanFile file = this.getFile(filename)) != NULL){
+    DanFile file = this.getFile(filename);
+    if(file != null){
       file.setVersion(version);
       file.invalidate();
     }
@@ -276,12 +272,12 @@ public class Peer {
 
   private DanFile getFile(String filename){
     for(DanFile df : files){
-      if(df.getFilename.equals(filename)){
+      if(df.getFilename().equals(filename)){
         return df;
       }
     }
 
-    return NULL;
+    return null;
   }
 
   private boolean seenQuery(MessageID messageID){

@@ -86,6 +86,9 @@ public class PeerSkeleton {
       // Receive filename
       String filename = (String) inputStream.readObject();
 
+      // Send file information
+
+
       // Send file
       FileInputStream fis = peer.obtain(filename); // File reading stream
       OutputStream os = s.getOutputStream(); // File uploading stream
@@ -111,7 +114,7 @@ public class PeerSkeleton {
       MessageID messageID = (MessageID) inputStream.readObject();
       String originServer = (String) inputStream.readObject();
       String filename = (String) inputStream.readObject();
-      int version = inputStream.getInt();
+      int version = inputStream.readInt();
 
       // Release resources
       s.close();
