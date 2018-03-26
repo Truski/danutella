@@ -54,6 +54,69 @@ public class DanFile implements Serializable{
     return originServer.toString().equals(peer.getFullAddress());
   }
 
+  /**
+   * Returns a nicely formatted string representing the DanFile
+   * @param ref A reference peer to determine if this is the owner of the file
+   * @return A pretty-printed string
+   */
+  public String print(Peer ref){
+    // Check the file's TTR before printing for latest results
+    checkTTR();
+
+    // Get name of the consistency status
+    String validation;
+    switch(consistency){
+      case VALID:
+        validation = "VALID";
+        break;
+      case INVALID:
+        validation = "INVALID";
+        break;
+      case TTR_EXPIRED:
+        validation = "TTR_EXPIRED";
+        break;
+      default:
+        validation = "UNKNOWN";
+    }
+
+    // If the provided peer is the owner, start it with 3 + symboles
+    if(isOwner(ref)){
+      return " +++ " + filename + " : { version: " + version + "; state: " + validation + " }";
+    }
+    // Otherwise, start it with one - symbol
+    return "   - " + filename + " : { version: " + version + "; state: " + validation + " }";
+  }
+
+  /**
+   * Updates the consistency based on the TTR (only for valid files)
+   */
+  public void checkTTR(){
+    if(lastPolledTime < 0) return; // Ignore TTR checks for master files
+
+    // Compare current time to the last polled time increased by the ttr time
+    long time = System.nanoTime();
+    if(isValid() && time > lastPolledTime + TTR){
+      consistency = TTR_EXPIRED;
+    }
+  }
+
+  /**
+   * Checks to see if the consistency stat is expired
+   * @return True if the file is expired via TTR
+   */
+  public boolean isExpired(){
+    return consistency == TTR_EXPIRED;
+  }
+
+  /**
+   * Sets a new lastPolledTime (now) and sets a new, provided TTR
+   * @param newTTR the new TTR for the DanFile
+   */
+  public void updateTTR(long newTTR){
+    lastPolledTime = System.nanoTime();
+    TTR = newTTR;
+  }
+
   // *******************
   // Getters and Setters
   // *******************
@@ -115,45 +178,6 @@ public class DanFile implements Serializable{
 
   public void setLastPolledTime(long lastPolledTime) {
     this.lastPolledTime = lastPolledTime;
-  }
-
-  public String print(Peer ref){
-    checkTTR();
-    String validation;
-    switch(consistency){
-      case VALID:
-        validation = "VALID";
-        break;
-      case INVALID:
-        validation = "INVALID";
-        break;
-      case TTR_EXPIRED:
-        validation = "TTR_EXPIRED";
-        break;
-      default:
-        validation = "UNKNOWN";
-    }
-    if(isOwner(ref)){
-      return " +++ " + filename + " : { version: " + version + "; state: " + validation + " }";
-    }
-    return " - " + filename + " : { version: " + version + "; state: " + validation + " }";
-  }
-
-  public void checkTTR(){
-    if(lastPolledTime < 0) return; // Ignore TTR checks for master files
-    long time = System.nanoTime();
-    if(isValid() && time > lastPolledTime + TTR){
-      consistency = TTR_EXPIRED;
-    }
-  }
-
-  public boolean isExpired(){
-    return consistency == TTR_EXPIRED;
-  }
-
-  public void updateTTR(long newTTR){
-    lastPolledTime = System.nanoTime();
-    TTR = newTTR;
   }
 
 }
