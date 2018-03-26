@@ -432,11 +432,14 @@ public class Peer {
     System.out.println("Invalidation received! " + filename + " version is now " + version);
     sleep();
 
+    // Check if this peer has this file
     DanFile file = this.getDanFile(filename);
     if(file != null){
       System.out.println("Invalidation successful. Old is " + file.getVersion());
-      file.setVersion(version);
-      file.invalidate();
+      // If the new version > current version, invalidate the file (don't discard it though as it could still be wanted by the user
+      if(file.getVersion() < version){
+        file.invalidate();
+      }
     }
 
     // Propagate invalidation message
