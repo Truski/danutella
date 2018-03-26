@@ -3,7 +3,7 @@
  * lazy poll method every period of time, which is a provided constant in this file.
  */
 public class LazyPoller {
-  private static final int LAZY_POLL_FREQUENCY = 1000 * 30; // How often to poll, defaulted at every 30 seconds
+  private static final int LAZY_POLL_FREQUENCY = 1000 * 15; // How often to poll, defaulted at every 15 seconds
   private Peer peer;
 
   public LazyPoller(Peer peer) {

@@ -29,7 +29,7 @@ public class Peer {
   // Numeric Constants
   public static final int DEFAULT_TTL = 5; // Default number of hops for messages
   public static final int MESSAGE_CACHE = 10; // Default size of associative array for messages
-  public static final long TTR = 1000 * 60 * 2; // Default time to refresh in ms
+  public static final long TTR = 1000 * 60; // Default time to refresh in ms
 
   // Program configuration parameters
   public static final int PUSH = 0, PULL = 1;
