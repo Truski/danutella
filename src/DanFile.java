@@ -154,5 +154,4 @@ public class DanFile implements Serializable{
     TTR = newTTR;
   }
 
-
 }

@@ -219,6 +219,7 @@ public class Peer {
         danFile.setVersion(0); // Original version is 0
         danFile.setConsistency(DanFile.VALID); // File is valid when created
         danFile.setLastModifiedTime(System.nanoTime()); // Now is the last modified time
+        danFile.setLastPolledTime(System.nanoTime()); // Now is the last polled time (default)
         danFile.setTTR(Peer.TTR); // Set the time to refresh as default time to refresh
 
         // Add file to list of files
@@ -384,11 +385,18 @@ public class Peer {
           old.setLastModifiedTime(danFile.getLastModifiedTime());
           old.setConsistency(danFile.getConsistency());
           old.setTTR(danFile.getTTR());
+          old.setLastPolledTime(danFile.getLastPolledTime());
           danFile = old;
         } else {
           // Otherwise, add it to the list of files
           files.add(danFile);
         }
+
+        // If this file was downloaded from the origin server, it counts as if it was just polled.
+        if(danFile.getOriginServer().equals(address)){
+          danFile.setLastPolledTime(System.nanoTime());
+        }
+
         System.out.println("Successfully downloaded " + filename + " from " + address);
       }
     } else {
