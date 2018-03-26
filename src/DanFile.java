@@ -49,6 +49,6 @@ public class DanFile {
   }
 
   public boolean isValid() {
-    return consistency = VALID;
+    return consistency == VALID;
   }
 }
