@@ -118,6 +118,7 @@ public class DanFile implements Serializable{
   }
 
   public String print(Peer ref){
+    checkTTR();
     String validation;
     switch(consistency){
       case VALID:
@@ -139,6 +140,7 @@ public class DanFile implements Serializable{
   }
 
   public void checkTTR(){
+    if(lastPolledTime < 0) return; // Ignore TTR checks for master files
     long time = System.nanoTime();
     if(isValid() && time > lastPolledTime + TTR){
       consistency = TTR_EXPIRED;

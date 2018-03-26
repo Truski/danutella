@@ -219,7 +219,7 @@ public class Peer {
         danFile.setVersion(0); // Original version is 0
         danFile.setConsistency(DanFile.VALID); // File is valid when created
         danFile.setLastModifiedTime(System.nanoTime()); // Now is the last modified time
-        danFile.setLastPolledTime(System.nanoTime()); // Now is the last polled time (default)
+        danFile.setLastPolledTime(-1); // A negative last polled time means this is the master file
         danFile.setTTR(Peer.TTR); // Set the time to refresh as default time to refresh
 
         // Add file to list of files
