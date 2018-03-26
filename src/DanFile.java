@@ -13,7 +13,7 @@ public class DanFile implements Serializable{
   private int version; // The current version of the file that this peer knows about
   private PeerID originServer; // The master server that owns the file and can edit it
   private int consistency; // The current consistency state (Valid, Invalid, TTR_Expired)
-  private long lastModifiedTime; // The last modified time in the system's nanoseconds of the file on disk
+  private long lastModifiedTime; // The last modified time in the system's milliseconds of the file on disk
   private long lastPolledTime; // The last time this file was polled for pull-based consistency
   private long TTR; // The length of time at which to poll
 
@@ -94,7 +94,7 @@ public class DanFile implements Serializable{
     if(lastPolledTime < 0) return; // Ignore TTR checks for master files
 
     // Compare current time to the last polled time increased by the ttr time
-    long time = System.nanoTime();
+    long time = System.currentTimeMillis();
     if(isValid() && time > lastPolledTime + TTR){
       consistency = TTR_EXPIRED;
     }
@@ -113,7 +113,7 @@ public class DanFile implements Serializable{
    * @param newTTR the new TTR for the DanFile
    */
   public void updateTTR(long newTTR){
-    lastPolledTime = System.nanoTime();
+    lastPolledTime = System.currentTimeMillis();
     TTR = newTTR;
   }
 

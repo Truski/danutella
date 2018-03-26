@@ -29,8 +29,7 @@ public class Peer {
   // Numeric Constants
   public static final int DEFAULT_TTL = 5; // Default number of hops for messages
   public static final int MESSAGE_CACHE = 10; // Default size of associative array for messages
-  public static final long NANOS_IN_SECOND = 1000000000; // Nanoseconds in a second for math
-  public static final long TTR = NANOS_IN_SECOND * 60; // Default time to refresh in seconds
+  public static final long TTR = 1000 * 60 * 5; // Default time to refresh in ms
 
   // Program configuration parameters
   public static final int PUSH = 0, PULL = 1;
@@ -152,7 +151,7 @@ public class Peer {
     if(danFile != null && danFile.isOwner(this)){
 
       danFile.setVersion(danFile.getVersion()+1);
-      danFile.setLastModifiedTime(System.nanoTime());
+      danFile.setLastModifiedTime(System.currentTimeMillis());
 
       System.out.println("Invalidating " + filename + "; new version: " + danFile.getVersion());
       MessageID messageID = new MessageID(ID, sequenceNumber++);
@@ -218,7 +217,7 @@ public class Peer {
         danFile.setOriginServer(ID); // Set the origin server to be this peer
         danFile.setVersion(0); // Original version is 0
         danFile.setConsistency(DanFile.VALID); // File is valid when created
-        danFile.setLastModifiedTime(System.nanoTime()); // Now is the last modified time
+        danFile.setLastModifiedTime(System.currentTimeMillis()); // Now is the last modified time
         danFile.setLastPolledTime(-1); // A negative last polled time means this is the master file
         danFile.setTTR(Peer.TTR); // Set the time to refresh as default time to refresh
 
@@ -394,7 +393,7 @@ public class Peer {
 
         // If this file was downloaded from the origin server, it counts as if it was just polled.
         if(danFile.getOriginServer().equals(address)){
-          danFile.setLastPolledTime(System.nanoTime());
+          danFile.setLastPolledTime(System.currentTimeMillis());
         }
 
         System.out.println("Successfully downloaded " + filename + " from " + address);
