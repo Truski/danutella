@@ -1,4 +1,6 @@
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * A DanFile represents a file in a shared drive. It contains helpers, getters, and setters to make tracking and sending
@@ -80,11 +82,21 @@ public class DanFile implements Serializable{
     }
 
     // If the provided peer is the owner, start it with 3 + symboles
+    String symbol;
     if(isOwner(ref)){
-      return " +++ " + filename + " : { version: " + version + "; state: " + validation + " }";
+      symbol = " +++ ";
+    } else {
+      symbol = "   - ";
     }
-    // Otherwise, start it with one - symbol
-    return "   - " + filename + " : { version: " + version + "; state: " + validation + " }";
+
+    return symbol + filename + " : {\n version: " + version + ";\n state: " + validation + ";\n lastModified: " + getTime(lastModifiedTime) + ";\n lastPolled: " + getTime(lastPolledTime) + "\n}";
+  }
+
+  private String getTime(long millis){
+    if(millis == -1) return "NOW"; // If this is the owner, the file is always current
+    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+    Date resultdate = new Date(millis);
+    return sdf.format(resultdate);
   }
 
   /**
