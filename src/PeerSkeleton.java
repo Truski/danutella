@@ -1,5 +1,6 @@
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -42,7 +43,7 @@ public class PeerSkeleton {
   public void query(Socket s, ObjectInputStream inputStream) {
     try {
       // Receive filename
-      int upstream = inputStream.readInt();
+      PeerID upstream = (PeerID) inputStream.readObject();
       MessageID messageID = (MessageID) inputStream.readObject();
       int TTL = inputStream.readInt();
       String filename = (String) inputStream.readObject();
@@ -63,7 +64,7 @@ public class PeerSkeleton {
       MessageID messageID = (MessageID) inputStream.readObject();
       int TTL = inputStream.readInt();
       String filename = (String) inputStream.readObject();
-      String address = (String) inputStream.readObject();
+      PeerID address = (PeerID) inputStream.readObject();
 
       // Release resources
       s.close();
@@ -86,12 +87,16 @@ public class PeerSkeleton {
       // Receive filename
       String filename = (String) inputStream.readObject();
 
-      // Send file information
+      // Open output stream
+      OutputStream os = s.getOutputStream(); // File uploading stream
 
+      // Send file information
+      DanFile danFile = peer.getFile(filename); // Get DanFile with the given name
+      ObjectOutputStream objectOutputStream = new ObjectOutputStream(os); // Create object output stream over network
+      objectOutputStream.writeObject(danFile); // Send DanFile over the network
 
       // Send file
       FileInputStream fis = peer.obtain(filename); // File reading stream
-      OutputStream os = s.getOutputStream(); // File uploading stream
 
       int count; // Number of bytes read from file
       byte[] buffer = new byte[4096]; // Buffer to store file in
@@ -112,7 +117,7 @@ public class PeerSkeleton {
     try {
       // Receive filename
       MessageID messageID = (MessageID) inputStream.readObject();
-      String originServer = (String) inputStream.readObject();
+      PeerID originServer = (PeerID) inputStream.readObject();
       String filename = (String) inputStream.readObject();
       int version = inputStream.readInt();
 

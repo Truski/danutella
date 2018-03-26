@@ -6,17 +6,44 @@ public class DanFile implements Serializable{
 
   private String filename;
   private int version;
-  private String originServer;
+  private PeerID originServer;
   private int consistency;
   private long lastModifiedTime;
   private long TTR;
 
-  public DanFile(String filename, int version, String originServer, long lastModifiedTime, long TTR) {
+  public DanFile(String filename) {
     this.filename = filename;
-    this.version = version;
+  }
+
+  public PeerID getOriginServer() {
+    return originServer;
+  }
+
+  public void setOriginServer(PeerID originServer) {
     this.originServer = originServer;
-    this.consistency = VALID;
+  }
+
+  public int getConsistency() {
+    return consistency;
+  }
+
+  public void setConsistency(int consistency) {
+    this.consistency = consistency;
+  }
+
+  public long getLastModifiedTime() {
+    return lastModifiedTime;
+  }
+
+  public void setLastModifiedTime(long lastModifiedTime) {
     this.lastModifiedTime = lastModifiedTime;
+  }
+
+  public long getTTR() {
+    return TTR;
+  }
+
+  public void setTTR(long TTR) {
     this.TTR = TTR;
   }
 
@@ -29,7 +56,7 @@ public class DanFile implements Serializable{
   }
 
   public boolean isOwner(Peer peer) {
-    return originServer.equals(peer.getFullAddress());
+    return originServer.toString().equals(peer.getFullAddress());
   }
 
   public int getVersion() {

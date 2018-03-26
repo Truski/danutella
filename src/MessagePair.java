@@ -1,8 +1,8 @@
 public class MessagePair {
   private MessageID messageID;
-  private int upstream;
+  private PeerID upstream;
 
-  public MessagePair(MessageID messageID, int upstream) {
+  public MessagePair(MessageID messageID, PeerID upstream) {
     this.messageID = messageID;
     this.upstream = upstream;
   }
@@ -15,11 +15,11 @@ public class MessagePair {
     this.messageID = messageID;
   }
 
-  public int getUpstream() {
+  public PeerID getUpstream() {
     return upstream;
   }
 
-  public void setUpstream(int upstream) {
+  public void setUpstream(PeerID upstream) {
     this.upstream = upstream;
   }
 

@@ -26,4 +26,10 @@ public class PeerID {
   public String toString(){
     return address + ":" + port;
   }
+
+  @Override
+  public boolean equals(Object other){
+    PeerID otherID = (PeerID) other;
+    return address.equals(otherID.getAddress()) && port == otherID.getPort();
+  }
 }

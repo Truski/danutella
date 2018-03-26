@@ -1,25 +1,25 @@
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class PeerStub {
-  private String address = Peer.ADDRESS;
-  private int port;
+  private PeerID ID;
 
-  public PeerStub(int port){
-    this.port = port;
+  public PeerStub(PeerID ID){
+    this.ID = ID;
   }
 
-  public void query(int upstream, MessageID messageID, int TTL, String filename){
+  public void query(PeerID upstream, MessageID messageID, int TTL, String filename){
     String rpc = "query";
     try {
-      Socket socket = new Socket(address, port);
+      Socket socket = new Socket(ID.getAddress(), ID.getPort());
 
       ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
       os.writeObject(rpc);
 
-      os.writeInt(upstream);
+      os.writeObject(upstream);
       os.writeObject(messageID);
       os.writeInt(TTL);
       os.writeObject(filename);
@@ -31,10 +31,10 @@ public class PeerStub {
     }
   }
 
-  public void hitQuery(MessageID messageID, int TTL, String filename, String address){
+  public void hitQuery(MessageID messageID, int TTL, String filename, PeerID address){
     String rpc = "hitQuery";
     try {
-      Socket socket = new Socket(this.address, this.port);
+      Socket socket = new Socket(ID.getAddress(), ID.getPort());
 
       ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
       os.writeObject(rpc);
@@ -51,10 +51,10 @@ public class PeerStub {
     }
   }
 
-  public boolean obtain(String filename){
+  public DanFile obtain(String filename){
     String rpc = "obtain";
     try {
-      Socket socket = new Socket(address, port);
+      Socket socket = new Socket(ID.getAddress(), ID.getPort());
 
       ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
       os.writeObject(rpc);
@@ -62,6 +62,11 @@ public class PeerStub {
       os.writeObject(filename);
 
       InputStream is = socket.getInputStream();
+
+      // Read in DanFile
+      ObjectInputStream objectInputStream = new ObjectInputStream(is);
+      DanFile danFile = (DanFile) objectInputStream.readObject();
+
       FileOutputStream fos = new FileOutputStream(Peer.OTHER_FILES_DIR + filename);
 
       int count;
@@ -73,19 +78,19 @@ public class PeerStub {
       socket.close();
       fos.close();
 
-      return true;
+      return danFile;
 
     } catch (Exception e){
       e.printStackTrace();
     }
 
-    return false;
+    return null;
   }
 
-  public void invalidate(MessageID messageID, String originServer, String filename, int version){
+  public void invalidate(MessageID messageID, PeerID originServer, String filename, int version){
     String rpc = "invalidate";
     try {
-      Socket socket = new Socket(this.address, this.port);
+      Socket socket = new Socket(ID.getAddress(), ID.getPort());
 
       ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
       os.writeObject(rpc);
@@ -103,7 +108,7 @@ public class PeerStub {
   }
 
   public String getFullAddress(){
-    return address + ":" + port;
+    return ID.toString();
   }
 
 }

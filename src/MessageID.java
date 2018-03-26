@@ -1,19 +1,19 @@
 import java.io.Serializable;
 
 public class MessageID implements Serializable {
-  private String peerID;
+  private PeerID peerID;
   private int sequenceNumber;
 
-  public MessageID(String peerID, int sequenceNumber) {
+  public MessageID(PeerID peerID, int sequenceNumber) {
     this.peerID = peerID;
     this.sequenceNumber = sequenceNumber;
   }
 
-  public String getPeerID() {
+  public PeerID getPeerID() {
     return peerID;
   }
 
-  public void setPeerID(String peerID) {
+  public void setPeerID(PeerID peerID) {
     this.peerID = peerID;
   }
 
