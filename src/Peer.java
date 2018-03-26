@@ -605,6 +605,8 @@ public class Peer {
         } else {
           // Otherwise, just update it with the new TTR
           danFile.updateTTR(result.getNewTTR());
+          // Update it to valid once again
+          danFile.setConsistency(DanFile.VALID);
         }
       }
     }
