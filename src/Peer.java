@@ -110,7 +110,7 @@ public class Peer {
     while(true){
 
       // Display options for peer and prompt
-      System.out.println("Please enter a command: get {filename}, files, edit {filename}");
+      System.out.println("Please enter a command: get {filename}, files, edit {filename}, refresh");
       System.out.print(prompt);
 
       // Parse command
@@ -139,6 +139,8 @@ public class Peer {
       } else if(function.equals("files")){
         peer.listFiles();
         continue;
+      } else if(function.equals("refresh")){
+        peer.refresh();
       }
 
       // Print error message for invalid command
@@ -146,28 +148,69 @@ public class Peer {
     }
   }
 
+  /**
+   * Simulates an edit on a file
+   * @param filename the name of the file to virtually edit
+   */
   private void edit(String filename) {
+    // Get the file
     DanFile danFile = getDanFile(filename);
+
+    // Make sure that this peer owns it
     if(danFile != null && danFile.isOwner(this)){
 
+      // Increment the version and set a new modified time
       danFile.setVersion(danFile.getVersion()+1);
       danFile.setLastModifiedTime(System.currentTimeMillis());
 
+      // Show user that it is being invalidated
       System.out.println("Invalidating " + filename + "; new version: " + danFile.getVersion());
+
+      // Broadcast an invalidation message to all neighboring peers
       MessageID messageID = new MessageID(ID, sequenceNumber++);
       for(PeerStub peerStub : neighbors){
         peerStub.invalidate(messageID, ID, filename, danFile.getVersion());
       }
 
     } else {
+      // Inform user he cannot edit a file he doesn't own
       System.out.println("You cannot edit" + filename + "; you must have and own the file.");
     }
   }
 
+  /**
+   * Lists all files that a peer has access to
+   */
   private void listFiles() {
     System.out.println("List of Files:");
+    // Loops through each file
     for(DanFile danFile : files){
+      // Prints out its details
       System.out.println(danFile.print(this));
+    }
+  }
+
+  private void refresh() {
+    // Update TTR-Expired files directly
+    for(DanFile df : files){
+      if(df.isExpired()){
+        // Create PeerStub to interact with the Peer that owns the file
+        PeerStub origin = new PeerStub(df.getOriginServer());
+
+        // Download file from that peer
+        DanFile danFile = origin.obtain(df.getFilename());
+
+        if(danFile != null){
+          // Since we already had it, update parameters
+          df.setVersion(danFile.getVersion());
+          df.setLastModifiedTime(danFile.getLastModifiedTime());
+          df.setConsistency(danFile.getConsistency());
+          df.setTTR(danFile.getTTR());
+          df.setLastPolledTime(System.currentTimeMillis());
+
+          System.out.println("Successfully refreshed " + df.getFilename());
+        }
+      }
     }
   }
 
