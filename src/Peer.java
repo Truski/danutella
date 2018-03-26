@@ -141,6 +141,7 @@ public class Peer {
         continue;
       } else if(function.equals("refresh")){
         peer.refresh();
+        continue;
       }
 
       // Print error message for invalid command
@@ -194,9 +195,10 @@ public class Peer {
   }
 
   private void refresh() {
-    // Update TTR-Expired files directly
+    // Update Invalid files directly
     for(DanFile df : files){
-      if(df.isExpired()){
+      // Check if it is invalid
+      if(df.getConsistency() == DanFile.INVALID){
         // Create PeerStub to interact with the Peer that owns the file
         PeerStub origin = new PeerStub(df.getOriginServer());
 
