@@ -108,7 +108,7 @@ public class DanFile implements Serializable{
 
     // Compare current time to the last polled time increased by the ttr time
     long time = System.currentTimeMillis();
-    if(isValid() && time > lastPolledTime + TTR){
+    if(consistency == VALID && time > lastPolledTime + TTR){
       consistency = TTR_EXPIRED;
     }
   }
