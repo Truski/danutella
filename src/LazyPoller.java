@@ -15,13 +15,15 @@ public class LazyPoller {
    */
   public void autoPoll(){
     while(true){
-      System.out.println("Automatically polling...");
-      peer.lazyPoll();
+      // Sleep first - no need to instantly poll
       try {
         Thread.sleep(LAZY_POLL_FREQUENCY);
       } catch (Exception e){
         e.printStackTrace();
       }
+
+      System.out.println("Automatically polling...");
+      peer.lazyPoll();
     }
   }
 }
