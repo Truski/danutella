@@ -106,11 +106,12 @@ public class Peer {
     // Create scanner to scan user input
     Scanner in = new Scanner(System.in);
 
+    // Display options for peer
+    System.out.println("Please enter a command: get {filename}, files, edit {filename}, refresh, ? for help");
+
     // Keep asking for commands until user types exit
     while(true){
-
-      // Display options for peer and prompt
-      System.out.println("Please enter a command: get {filename}, files, edit {filename}, refresh");
+      // Print out prompt
       System.out.print(prompt);
 
       // Parse command
@@ -137,10 +138,16 @@ public class Peer {
           continue;
         }
       } else if(function.equals("files")){
+        // List all files
         peer.listFiles();
         continue;
       } else if(function.equals("refresh")){
+        // Refresh invalid files
         peer.refresh();
+        continue;
+      } else if(function.equals("?")){
+        // Display help message
+        System.out.println("Please enter a command: get {filename}, files, edit {filename}, refresh, ? for help");
         continue;
       }
 
@@ -214,6 +221,25 @@ public class Peer {
           df.setLastPolledTime(System.currentTimeMillis());
 
           System.out.println("Successfully refreshed " + df.getFilename());
+
+
+          // Print file contents if small file
+          try {
+            long length = new File(OTHER_FILES_DIR + df.getFilename()).length();
+            System.out.println("File size: " + length + " bytes.");
+            if(length > 1024){
+              System.out.println("File is larger than 1K - will not display.");
+            } else {
+              FileInputStream fileInputStream = new FileInputStream(OTHER_FILES_DIR + df.getFilename());
+              byte[] buffer = new byte[1024];
+              fileInputStream.read(buffer, 0, 1024);
+              System.out.println("<==|== Start of File Contents ==||==>");
+              System.out.println(new String(buffer));
+              System.out.println("<==|==  End of File Contents  ==||==>");
+            }
+          } catch (Exception e){
+            e.printStackTrace();
+          }
         }
       }
     }
@@ -367,13 +393,13 @@ public class Peer {
     }
 
     // Inform the user that a query has been received
-    System.out.println("query from " + upstream + " for " + filename + ". Cache size = " + messages.size());
+    System.out.println("Query from " + upstream + " for " + filename + ".");
     sleep();
 
     // Check to see if this peer is able to share this file
     if(this.hasFile(filename)){
       // If so, create and set a hitQuery upstream
-      System.out.println("WOWZERS! Found it! Sending to " + upstream);
+      System.out.println("Found it! Sending hitQuery to " + upstream);
       PeerStub peerStub = new PeerStub(upstream);
       peerStub.hitQuery(messageID, this.TTL, filename, ID);
     }
@@ -399,7 +425,7 @@ public class Peer {
    */
   public synchronized void hitQuery(MessageID messageID, int TTL, String filename, PeerID address) {
     // Announce that a new hitquery has come in
-    System.out.println("hitquery from " + address + " to " + messageID.getPeerID());
+    System.out.println("Received hitQuery from " + address + " meant for " + messageID.getPeerID() + ".");
     sleep();
 
     // First, check if this hitQuery is to me
@@ -408,7 +434,7 @@ public class Peer {
       // Check to see if this peer has already downloaded this file
       if(!fileRequests.contains(messageID)){
         // Ignore the message if the file is no longer wanted
-        System.out.println("Receieved hitquery from " + address + ", but I already got " + filename);
+        System.out.println("Receieved hitQuery from " + address + ", but I already got " + filename + ".");
         return;
       }
 
@@ -444,7 +470,25 @@ public class Peer {
           danFile.setLastPolledTime(System.currentTimeMillis());
         }
 
-        System.out.println("Successfully downloaded " + filename + " from " + address);
+        System.out.println("Successfully downloaded " + filename + " from " + address + ".");
+
+        // Print file contents if small file
+        try {
+          long length = new File(OTHER_FILES_DIR + filename).length();
+          System.out.println("File size: " + length + " bytes.");
+          if(length > 1024){
+            System.out.println("File is larger than 1K - will not display.");
+          } else {
+            FileInputStream fileInputStream = new FileInputStream(OTHER_FILES_DIR + filename);
+            byte[] buffer = new byte[1024];
+            fileInputStream.read(buffer, 0, 1024);
+            System.out.println("<==|== Start of File Contents ==||==>");
+            System.out.println(new String(buffer));
+            System.out.println("<==|==  End of File Contents  ==||==>");
+          }
+        } catch (Exception e){
+          e.printStackTrace();
+        }
       }
     } else {
       // If this is not a hitQuery to this Peer, send it upstream
@@ -468,7 +512,7 @@ public class Peer {
    */
   public synchronized FileInputStream obtain(String filename) {
     // Announce sending file
-    System.out.println("Sending file " + filename);
+    System.out.println("Sending file " + filename + " directly over the network.");
     sleep();
 
     FileInputStream is = null; // The stream to be returned
@@ -525,7 +569,7 @@ public class Peer {
     // Check if this peer has this file
     DanFile file = this.getDanFile(filename);
     if(file != null){
-      System.out.println("Invalidation successful. Old is " + file.getVersion());
+      System.out.println("Invalidation successful." + file.getVersion());
       // If the new version > current version, invalidate the file (don't discard it though as it could still be wanted by the user
       if(file.getVersion() < version){
         file.invalidate();
@@ -602,7 +646,7 @@ public class Peer {
 
         // If the result is out of date, invalidate the file
         if(result.isOutOfDate()){
-          System.out.println("Invalidating " + danFile.getFilename() + ". It's too old!");
+          System.out.println("Invalidating " + danFile.getFilename() + ". The poll gave back a newer version.");
           danFile.invalidate();
         } else {
           // Otherwise, just update it with the new TTR

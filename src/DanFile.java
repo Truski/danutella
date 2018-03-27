@@ -81,7 +81,7 @@ public class DanFile implements Serializable{
         validation = "UNKNOWN";
     }
 
-    // If the provided peer is the owner, start it with 3 + symboles
+    // If the provided peer is the owner, start it with 3 + symbols
     String symbol;
     if(isOwner(ref)){
       symbol = " +++ ";
@@ -89,9 +89,14 @@ public class DanFile implements Serializable{
       symbol = "   - ";
     }
 
-    return symbol + filename + " : {\n version: " + version + ";\n state: " + validation + ";\n lastModified: " + getTime(lastModifiedTime) + ";\n lastPolled: " + getTime(lastPolledTime) + "\n}";
+    return symbol + filename + " : {\n  version: " + version + ";\n  state: " + validation + ";\n  lastModified: " + getTime(lastModifiedTime) + ";\n  lastPolled: " + getTime(lastPolledTime) + "\n}";
   }
 
+  /**
+   * Converts a milliseconds to a formatted time in hours minutes seconds
+   * @param millis time in milliseconds
+   * @return string containing formatted time
+   */
   private String getTime(long millis){
     if(millis == -1) return "NOW"; // If this is the owner, the file is always current
     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");

@@ -15,7 +15,7 @@ public class LazyPoller {
    */
   public void autoPoll(){
     while(true){
-      System.out.println("Polling!");
+      System.out.println("Automatically polling...");
       peer.lazyPoll();
       try {
         Thread.sleep(LAZY_POLL_FREQUENCY);
