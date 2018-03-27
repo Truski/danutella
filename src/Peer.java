@@ -54,6 +54,7 @@ public class Peer {
    */
   public static void main(String[] args){
 
+    // Read command line arguments if there are any (push vs pull)
     if(args.length == 0){
       System.out.println("No consistency configuration parameter provided. Using push-based consistency.");
     } else {
